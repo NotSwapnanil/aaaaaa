@@ -54,14 +54,14 @@
                         <i class="fa-solid fa-shield-virus text-3xl mr-3"></i>
                         <div>
                             <h1 class="font-bold text-xl tracking-tight text-slate-900">AIR GUARD</h1>
-                            <p class="text-xs text-slate-500 font-medium tracking-wide">IP: <span id="display-ip">10.202.239.136:8080</span></p>
+                            <p class="text-xs text-slate-500 font-medium tracking-wide">TARGET: <span id="display-ip" class="font-mono">10.202.239.136:8080</span></p>
                         </div>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
                     <span id="connection-status" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 transition-colors">
                         <span class="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
-                        OFFLINE / SIMULATION
+                        OFFLINE
                     </span>
                     <button onclick="toggleConfig()" class="p-2 rounded-full text-slate-400 hover:text-slate-500 focus:outline-none" title="Configure IP">
                         <i class="fa-solid fa-gear"></i>
@@ -70,6 +70,13 @@
             </div>
         </div>
     </nav>
+
+    <!-- HTTPS Warning Banner (Only shows if needed) -->
+    <div id="https-warning" class="hidden bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4" role="alert">
+        <p class="font-bold">Connection Warning</p>
+        <p class="text-sm">You are viewing this on a Secure (HTTPS) site. Browsers will block connections to your Local ESP32 IP. 
+        <br><strong>Fix:</strong> Download this file (Ctrl+S) and open it directly from your computer folder.</p>
+    </div>
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -96,25 +103,25 @@
 
         <!-- Controls Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div class="glass-panel rounded-xl p-6 flex items-center justify-between">
+            <div class="glass-panel rounded-xl p-6 flex items-center justify-between border-l-4 border-teal-500">
                 <div>
                     <h3 class="font-bold text-lg text-slate-800">Purifier Control</h3>
-                    <p class="text-xs text-slate-500">Toggle main air purification system</p>
+                    <p class="text-xs text-slate-500">Main purification unit</p>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="sendCommand('purifier', 'on')" class="control-btn px-4 py-2 bg-teal-600 text-white rounded-lg font-medium shadow-sm hover:bg-teal-700">ON</button>
-                    <button onclick="sendCommand('purifier', 'off')" class="control-btn px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-medium shadow-sm hover:bg-slate-300">OFF</button>
+                    <button onclick="sendCommand('purifier', 'on')" class="control-btn px-6 py-2 bg-teal-600 text-white rounded-lg font-bold shadow hover:bg-teal-700">ON</button>
+                    <button onclick="sendCommand('purifier', 'off')" class="control-btn px-6 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold shadow hover:bg-slate-300">OFF</button>
                 </div>
             </div>
             
-            <div class="glass-panel rounded-xl p-6 flex items-center justify-between">
+            <div class="glass-panel rounded-xl p-6 flex items-center justify-between border-l-4 border-blue-500">
                 <div>
                     <h3 class="font-bold text-lg text-slate-800">Fan Control</h3>
-                    <p class="text-xs text-slate-500">Toggle exhaust/circulation fan</p>
+                    <p class="text-xs text-slate-500">Exhaust / Cooling Fan</p>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="sendCommand('fan', 'on')" class="control-btn px-4 py-2 bg-blue-600 text-white rounded-lg font-medium shadow-sm hover:bg-blue-700">ON</button>
-                    <button onclick="sendCommand('fan', 'off')" class="control-btn px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-medium shadow-sm hover:bg-slate-300">OFF</button>
+                    <button onclick="sendCommand('fan', 'on')" class="control-btn px-6 py-2 bg-blue-600 text-white rounded-lg font-bold shadow hover:bg-blue-700">ON</button>
+                    <button onclick="sendCommand('fan', 'off')" class="control-btn px-6 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold shadow hover:bg-slate-300">OFF</button>
                 </div>
             </div>
         </div>
@@ -136,7 +143,7 @@
                 <div class="w-full bg-slate-200 rounded-full h-2 mb-2">
                     <div class="bg-teal-500 h-2 rounded-full" style="width: 0%" id="aqi-bar"></div>
                 </div>
-                <p class="text-xs text-slate-600 font-medium" id="aqi-desc">waiting for data...</p>
+                <p class="text-xs text-slate-600 font-medium" id="aqi-desc">Connecting...</p>
             </div>
 
             <!-- Temperature (BME680/DHT) -->
@@ -236,6 +243,7 @@
                 <div class="glass-panel rounded-xl p-0 overflow-hidden">
                     <div class="bg-slate-50 p-3 border-b border-slate-100 flex justify-between items-center">
                         <span class="text-xs font-bold text-slate-500 uppercase">System Log</span>
+                        <button onclick="clearLogs()" class="text-[10px] text-blue-500 hover:underline">Clear</button>
                     </div>
                     <div class="p-3 space-y-3 max-h-40 overflow-y-auto" id="log-container">
                         <!-- Logs injected by JS -->
@@ -251,6 +259,12 @@
             <h3 class="font-bold text-lg mb-4">Connection Settings</h3>
             <label class="block text-sm font-medium text-slate-700 mb-2">ESP32 IP Address</label>
             <input type="text" id="ip-input" value="10.202.239.136:8080" class="w-full border border-slate-300 rounded-lg p-2 mb-4 focus:ring-2 focus:ring-teal-500 outline-none">
+            
+            <label class="flex items-center space-x-2 mb-4">
+                <input type="checkbox" id="sim-check" class="rounded text-teal-600">
+                <span class="text-sm text-slate-600">Enable Simulation (Fake Data) if offline</span>
+            </label>
+
             <div class="flex justify-end gap-2">
                 <button onclick="toggleConfig()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
                 <button onclick="saveConfig()" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">Save & Connect</button>
@@ -262,7 +276,12 @@
         // --- 1. CONFIGURATION ---
         let ESP_IP = "10.202.239.136:8080";
         let isConnected = false;
-        let useSimulation = true; // Fallback to simulation if fetch fails
+        let useSimulation = false; // Default to FALSE to force connection attempts
+
+        // Check if we are on HTTPS
+        if (window.location.protocol === 'https:') {
+            document.getElementById('https-warning').classList.remove('hidden');
+        }
 
         const systemState = {
             aqi: 0,
@@ -308,48 +327,43 @@
 
         // --- 3. DATA FETCHING LOGIC ---
         async function fetchData() {
-            try {
-                // Attempt to fetch from the local IP. 
-                // Note: Mixed Content errors will occur if this page is HTTPS and IP is HTTP.
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout
+            if (useSimulation) {
+                simulateData();
+                updateUI();
+                return;
+            }
 
+            try {
+                // Try to fetch plain text from root '/'
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 1500);
+
+                // Note: We use mode 'no-cors' just to see if device is ALIVE
+                // But to READ data, we actually need CORS. If this fails, we can't display data.
+                // We assume user opens file locally (file://) which is more permissive.
+                
+                // HACK: We will try to fetch. If it throws a Network Error, it means IP is down or CORS block.
                 const response = await fetch(`http://${ESP_IP}/`, { 
-                    signal: controller.signal,
-                    mode: 'no-cors' // This limits access to response body, but let's try standard first
-                    // Realistically, for local IP fetch from public web, we often need a proxy or standard CORS
-                    // For this demo, we will try standard fetch. If it fails, we fall back to simulation.
-                }).catch(err => { throw err; });
+                    signal: controller.signal
+                });
                 
-                // If we are here, we might have connected.
-                // However, parsing text from opaque no-cors response is impossible in JS.
-                // We assume the user runs this HTML locally or allows CORS.
-                
-                // Mocking the text parse logic for the provided format:
-                // If fetch works, we read text. For this demo environment, 
-                // we will likely hit the catch block -> Simulation.
-                
-                /* LOGIC IF WE COULD READ THE TEXT (Standard Localhost Scenario):
-                   const text = await response.text();
-                   parseSensorText(text);
-                   isConnected = true;
-                   useSimulation = false;
-                */
-                
-                // Since we cannot actually hit your local IP from this cloud preview:
-                throw new Error("Cannot reach local IP from cloud preview.");
+                if (response.ok) {
+                    const text = await response.text();
+                    parseSensorText(text);
+                    isConnected = true;
+                } else {
+                    throw new Error("Device found but returned error");
+                }
 
             } catch (error) {
-                // Connection failed (expected in cloud preview accessing local IP)
-                // console.log("Fetch failed (expected for local IP), switching to simulation.");
+                // console.log("Fetch failed:", error);
                 isConnected = false;
-                useSimulation = true;
-                simulateData();
+                // If simple fetch fails, we might be blocked by CORS. 
+                // We keep 'isConnected' false but don't switch to simulation unless user asks.
             }
             updateUI();
         }
 
-        // Parse the specific text format you provided
         function parseSensorText(text) {
             // Regex to match your output format: "AQI 115", "Temperature 22.8", etc.
             const match = (regex) => {
@@ -382,73 +396,15 @@
             if (pm10) systemState.pm10 = parseInt(pm10);
             
             const dust = text.match(/Dust\s*(.*)/);
-            if (dust) systemState.dustStatus = dust[1].trim(); // e.g., "NO DUST"
+            if (dust) systemState.dustStatus = dust[1].trim(); 
         }
 
-        // --- 4. SIMULATION (Fallback) ---
-        // This makes the dashboard look alive even without connection
-        function simulateData() {
-            // Random walk logic centered around your sample data
-            systemState.aqi = fluctuate(systemState.aqi || 115, 100, 130, 2);
-            systemState.temp = fluctuate(systemState.temp || 22.8, 22, 24, 0.1);
-            systemState.humidity = fluctuate(systemState.humidity || 49.5, 48, 52, 0.5);
-            systemState.pressure = fluctuate(systemState.pressure || 1009, 1000, 1020, 1);
-            systemState.gas = fluctuate(systemState.gas || 231, 200, 250, 5);
-            systemState.ds18b20 = fluctuate(systemState.ds18b20 || 24.75, 24, 26, 0.05);
-            systemState.pm25 = fluctuate(systemState.pm25 || 8, 5, 15, 1);
-            systemState.pm10 = fluctuate(systemState.pm10 || 13, 10, 20, 1);
-            
-            systemState.dustStatus = systemState.pm25 > 20 ? "DUST DETECTED" : "NO DUST";
-        }
-
-        function fluctuate(current, min, max, step) {
-            let change = (Math.random() - 0.5) * step;
-            let val = current + change;
-            return Math.max(min, Math.min(max, val));
-        }
-
-        // --- 5. UI UPDATES ---
-        function updateUI() {
-            // Update Text
-            document.getElementById('aqi-value').innerText = Math.round(systemState.aqi);
-            document.getElementById('aqi-desc').innerText = systemState.aqi > 100 ? "Moderate" : "Good";
-            document.getElementById('temp-value').innerText = systemState.temp.toFixed(1);
-            document.getElementById('hum-value').innerText = systemState.humidity.toFixed(1) + " %";
-            document.getElementById('pressure-value').innerText = Math.round(systemState.pressure);
-            document.getElementById('gas-value').innerText = Math.round(systemState.gas);
-            document.getElementById('ds18b20-value').innerText = systemState.ds18b20.toFixed(2);
-            document.getElementById('pm25-value').innerText = Math.round(systemState.pm25);
-            document.getElementById('pm10-value').innerText = Math.round(systemState.pm10);
-            document.getElementById('dust-status').innerText = systemState.dustStatus;
-
-            // Update Connection Badge
-            const badge = document.getElementById('connection-status');
-            if (isConnected) {
-                badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 transition-colors";
-                badge.innerHTML = `<span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span> ONLINE`;
-            } else {
-                badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 transition-colors";
-                badge.innerHTML = `<span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span> SIMULATION MODE`;
-            }
-
-            // Update AQI Bar Color
-            const bar = document.getElementById('aqi-bar');
-            let pct = Math.min((systemState.aqi / 300) * 100, 100);
-            bar.style.width = pct + "%";
-            
-            // Chart Update
-            const chartData = historyChart.data.datasets[0].data;
-            chartData.shift();
-            chartData.push(systemState.aqi);
-            historyChart.update();
-        }
-
-        // --- 6. CONTROLS ---
+        // --- 4. CONTROLS (THE FIX) ---
         function sendCommand(device, action) {
             // Optimistic UI update
-            addLog(`Sending command: ${device.toUpperCase()} ${action.toUpperCase()}`);
+            addLog(`Sending: ${device.toUpperCase()} -> ${action.toUpperCase()}`);
             
-            // Update Fan Icon locally for feedback
+            // UI Toggle Logic
             if(device === 'fan' || device === 'purifier') {
                 const fanIcon = document.getElementById('fan-icon');
                 const fanText = document.getElementById('fan-status-text');
@@ -463,10 +419,72 @@
                 }
             }
 
-            // Try to send to ESP32
-            // URL pattern: http://IP/device/action (e.g., http://10.../fan/on)
-            fetch(`http://${ESP_IP}/${device}/${action}`, { mode: 'no-cors' })
-                .catch(e => console.log("Command sent (blindly due to no-cors)"));
+            const url = `http://${ESP_IP}/${device}/${action}`;
+
+            // STRATEGY 1: Standard Fetch (Best if CORS is enabled on ESP32)
+            fetch(url, { method: 'GET', mode: 'no-cors' })
+                .then(() => addLog("Command sent via Fetch"))
+                .catch(() => {
+                    // STRATEGY 2: IMAGE BEACON (Fallback / Brute Force)
+                    // If Fetch fails (e.g. Mixed Content), try loading it as an image.
+                    // This forces a GET request to the local IP.
+                    addLog("Fetch failed, trying Beacon...");
+                    const img = new Image();
+                    img.src = url + "?t=" + new Date().getTime(); // Add timestamp to prevent caching
+                });
+        }
+
+        // --- 5. SIMULATION (Fallback) ---
+        function simulateData() {
+            systemState.aqi = fluctuate(systemState.aqi || 115, 100, 130, 2);
+            systemState.temp = fluctuate(systemState.temp || 22.8, 22, 24, 0.1);
+            systemState.humidity = fluctuate(systemState.humidity || 49.5, 48, 52, 0.5);
+            systemState.pressure = fluctuate(systemState.pressure || 1009, 1000, 1020, 1);
+            systemState.gas = fluctuate(systemState.gas || 231, 200, 250, 5);
+            systemState.ds18b20 = fluctuate(systemState.ds18b20 || 24.75, 24, 26, 0.05);
+            systemState.pm25 = fluctuate(systemState.pm25 || 8, 5, 15, 1);
+            systemState.pm10 = fluctuate(systemState.pm10 || 13, 10, 20, 1);
+            systemState.dustStatus = systemState.pm25 > 20 ? "DUST DETECTED" : "NO DUST";
+        }
+
+        function fluctuate(current, min, max, step) {
+            let change = (Math.random() - 0.5) * step;
+            let val = current + change;
+            return Math.max(min, Math.min(max, val));
+        }
+
+        // --- 6. UI UPDATES ---
+        function updateUI() {
+            if(isConnected || useSimulation) {
+                document.getElementById('aqi-value').innerText = Math.round(systemState.aqi);
+                document.getElementById('aqi-desc').innerText = systemState.aqi > 100 ? "Moderate" : "Good";
+                document.getElementById('temp-value').innerText = systemState.temp.toFixed(1);
+                document.getElementById('hum-value').innerText = systemState.humidity.toFixed(1) + " %";
+                document.getElementById('pressure-value').innerText = Math.round(systemState.pressure);
+                document.getElementById('gas-value').innerText = Math.round(systemState.gas);
+                document.getElementById('ds18b20-value').innerText = systemState.ds18b20.toFixed(2);
+                document.getElementById('pm25-value').innerText = Math.round(systemState.pm25);
+                document.getElementById('pm10-value').innerText = Math.round(systemState.pm10);
+                document.getElementById('dust-status').innerText = systemState.dustStatus;
+
+                const chartData = historyChart.data.datasets[0].data;
+                chartData.shift();
+                chartData.push(systemState.aqi);
+                historyChart.update();
+            }
+
+            // Badge
+            const badge = document.getElementById('connection-status');
+            if (isConnected) {
+                badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 transition-colors";
+                badge.innerHTML = `<span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span> ONLINE`;
+            } else if (useSimulation) {
+                badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 transition-colors";
+                badge.innerHTML = `<span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span> SIMULATION`;
+            } else {
+                badge.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 transition-colors";
+                badge.innerHTML = `<span class="w-2 h-2 bg-slate-400 rounded-full mr-2"></span> TRYING TO CONNECT...`;
+            }
         }
 
         function addLog(msg) {
@@ -478,6 +496,10 @@
             container.prepend(div);
         }
 
+        function clearLogs() {
+            document.getElementById('log-container').innerHTML = '';
+        }
+
         // --- 7. CONFIG UTILS ---
         function toggleConfig() {
             const modal = document.getElementById('config-modal');
@@ -486,14 +508,19 @@
 
         function saveConfig() {
             ESP_IP = document.getElementById('ip-input').value;
+            useSimulation = document.getElementById('sim-check').checked;
+            
             document.getElementById('display-ip').innerText = ESP_IP;
             toggleConfig();
-            addLog(`IP updated to ${ESP_IP}`);
+            addLog(`Settings saved. IP: ${ESP_IP}`);
         }
 
         // --- 8. STARTUP ---
-        setInterval(fetchData, 2000); // Poll every 2 seconds
-        updateUI(); // Initial paint
+        // Try fetching more often for responsiveness
+        setInterval(fetchData, 1000); 
+        
+        // Initial Log
+        addLog("Dashboard started. Looking for " + ESP_IP + "...");
 
     </script>
 </body>
